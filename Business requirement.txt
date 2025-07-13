@@ -1,0 +1,4 @@
+Project Summary:
+"Created a dynamic reporting system in Excel where data is regularly updated, 
+and automated reports with structured tables are generated and shared efficiently."
+

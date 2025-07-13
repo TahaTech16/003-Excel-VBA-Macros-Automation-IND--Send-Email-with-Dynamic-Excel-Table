@@ -1,0 +1,613 @@
+''****************
+''Any types of Excel Automation, Report, Dashboard, VBA, Macros, MIS, Adv. Excel, SQL, Web Development using Django please contact me
+''Name:Mahetab
+''mahetabforwork@gmail.com
+''Mob:+91 9545302653
+''****************
+
+
+Dim lr_top As Integer
+Dim lr_group As Integer
+Dim lr_records As Integer
+
+
+Sub Main_createPivotTableForCount()
+'
+' createPivotTableForCount Macro
+' Create pivot table for count no of enteries in each id
+    
+    Application.DisplayAlerts = False
+    Application.ScreenUpdating = False
+    
+    ThisWorkbook.Activate
+    
+    Call deleteTemptSheet
+    Call deleteTemp1
+    
+    
+    Call Temp1sheetAdd
+    Call TempSheetAdd
+    Call autoFitColumn
+    
+    
+    Dim pvtSheet As String
+    
+    Sheets("Data").Select
+    
+
+
+'    Range("A1").Select
+'    Range(Selection, Selection.End(xlDown)).Select
+'    Range(Selection, Selection.End(xlToRight)).Select
+
+    Dim lastRow As Integer
+    Range("A1048576").Select
+    Selection.End(xlUp).Select
+    lastRow = ActiveCell.Row
+
+    
+    ActiveWorkbook.PivotCaches.Create(SourceType:=xlDatabase, SourceData:= _
+        "Data!R1C1:" & "R" & lastRow & "C10", Version:=xlPivotTableVersion15).CreatePivotTable _
+        TableDestination:="", TableName:="PivotTable3", DefaultVersion:= _
+        xlPivotTableVersion15
+        
+'    ActiveWorkbook.PivotCaches.Create(SourceType:=xlDatabase, SourceData:= _
+'        "Data!R1C1:R20C10", Version:=xlPivotTableVersion15).CreatePivotTable _
+'        TableDestination:="", TableName:="PivotTable3", DefaultVersion:= _
+'        xlPivotTableVersion15
+        
+    ActiveSheet.PivotTableWizard TableDestination:=ActiveSheet.Cells(3, 1)
+    ActiveSheet.Cells(3, 1).Select
+    With ActiveSheet.PivotTables("PivotTable3").PivotFields("AssigneeELID")
+        .Orientation = xlRowField
+        .Position = 1
+    End With
+    
+    With ActiveSheet.PivotTables("PivotTable3").PivotFields("Assignee Name")
+        .Orientation = xlRowField
+        .Position = 2
+    End With
+    
+    ActiveSheet.PivotTables("PivotTable3").AddDataField ActiveSheet.PivotTables( _
+        "PivotTable3").PivotFields("AssigneeELID"), "Count of AssigneeELID", xlCount
+    With ActiveSheet.PivotTables("PivotTable3").PivotFields("AssigneeELID")
+        .Orientation = xlRowField
+        .Position = 1
+    End With
+    
+    Range("A6").Select
+    With ActiveSheet.PivotTables("PivotTable3")
+        .InGridDropZones = True
+        .RowAxisLayout xlTabularRow
+    End With
+    ActiveSheet.PivotTables("PivotTable3").PivotFields("AssigneeELID").Subtotals = _
+        Array(False, False, False, False, False, False, False, False, False, False, False, False)
+    Range("C6").Select
+    ActiveSheet.PivotTables("PivotTable3").PivotFields("Assignee Name").AutoSort _
+        xlDescending, "Count of AssigneeELID", ActiveSheet.PivotTables("PivotTable3"). _
+        PivotColumnAxis.PivotLines(1), 1
+    Range("B6").Select
+    ActiveSheet.PivotTables("PivotTable3").PivotFields("Assignee Name").AutoSort _
+        xlDescending, "Assignee Name"
+    ActiveSheet.PivotTables("PivotTable3").PivotSelect "AssigneeELID[All]", _
+        xlLabelOnly, True
+    Range("C7").Select
+    ActiveSheet.PivotTables("PivotTable3").PivotFields("Assignee Name").AutoSort _
+        xlAscending, "Count of AssigneeELID", ActiveSheet.PivotTables("PivotTable3"). _
+        PivotColumnAxis.PivotLines(1), 1
+    ActiveSheet.PivotTables("PivotTable3").PivotFields("Assignee Name").AutoSort _
+        xlDescending, "Count of AssigneeELID", ActiveSheet.PivotTables("PivotTable3"). _
+        PivotColumnAxis.PivotLines(1), 1
+        
+    pvtSheet = ActiveSheet.Name
+    
+    Columns("A:C").Select
+    Selection.Copy
+    
+    Sheets("Temp1").Select
+    
+    Range("A1").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Selection.Columns.AutoFit
+    Rows("1:3").Select
+    Application.CutCopyMode = False
+    Selection.Delete Shift:=xlUp
+    Range("A1048576").Select
+    Selection.End(xlUp).Select
+
+    ActiveCell.EntireRow.Select
+'    Range(Selection, Selection.End(xlToRight)).Select
+    Selection.Delete Shift:=xlUp
+    
+    Range("C1").Select
+    
+    ActiveCell.FormulaR1C1 = "Total Count"
+    Range("A1").Select
+    
+    Range(Selection, Selection.End(xlToRight)).Select
+    Selection.Font.Bold = True
+    
+    Range("A1").Select
+    Range(Selection, Selection.End(xlToRight)).Select
+    
+    With Selection.Interior
+        .Pattern = xlSolid
+        .PatternColorIndex = xlAutomatic
+        .ThemeColor = xlThemeColorAccent4
+        .TintAndShade = 0
+        .PatternTintAndShade = 0
+    End With
+    
+    Call sort
+    Call makeBorder
+    
+    Range("A1:C4").Select
+    Selection.Copy
+    
+    Sheets("TempSheet").Select
+    Range("B2").Value = "TOP 3"
+    Range("B3").Select
+    ActiveSheet.Paste
+    Application.CutCopyMode = False
+    
+    Range("B1048576").Select
+    Selection.End(xlUp).Select
+    lr_top = ActiveCell.Row
+
+    
+    Call autoFitColumn
+    Sheets(pvtSheet).Select
+    ActiveWindow.SelectedSheets.Delete
+    
+    Sheets("Temp1").Select
+    ActiveWindow.SelectedSheets.Delete
+    
+    Call TrackGroup
+    
+    
+    
+    
+    Sheets("TempSheet").Select
+    Range("B3").Select
+    Call makeBorder
+    
+    
+    
+    Range("B8").Value = "Group by ID"
+    Range("B9").Select
+    Call makeBorder
+    
+    Range("A16").Value = "Records"
+    Range("A17").Select
+    Call makeBorder
+     
+    Call mBorder
+    
+    Call sendEmail_ExcelTable
+    Call deleteTemptSheet
+    Call deleteTemp1
+        
+    Application.DisplayAlerts = True
+    Application.ScreenUpdating = True
+    
+    
+    MsgBox ("Your Task Has Been Done ! Enjoy !!!!!!")
+        ThisWorkbook.Save
+
+End Sub
+
+
+Sub Temp1sheetAdd()
+   
+    ThisWorkbook.Activate
+    Sheets("Data").Select
+    Sheets.Add After:=ActiveSheet
+    ActiveSheet.Name = "Temp1"
+    
+End Sub
+
+Sub TempSheetAdd()
+   
+    ThisWorkbook.Activate
+    Sheets("Data").Select
+    Sheets.Add After:=ActiveSheet
+    ActiveSheet.Name = "TempSheet"
+    
+End Sub
+
+
+
+Sub deleteSheet()
+    
+    ThisWorkbook.Activate
+    Sheets("Temp1").Select
+    ActiveWindow.SelectedSheets.Delete
+   
+End Sub
+Sub sort()
+    ThisWorkbook.Activate
+    
+    Dim lastRow As Integer
+    Range("A1048576").Select
+    Selection.End(xlUp).Select
+    lastRow = ActiveCell.Row
+
+'    Range("A1").Select
+'    Range(Selection, Selection.End(xlDown)).Select
+'    Range(Selection, Selection.End(xlToRight)).Select
+    
+    
+    Range("A1:C" & lastRow).Select
+ 
+    ActiveWorkbook.Worksheets("Temp1").sort.SortFields.Clear
+    ActiveWorkbook.Worksheets("Temp1").sort.SortFields.Add Key:=Range("C2:" & "C" & lastRow), _
+        SortOn:=xlSortOnValues, Order:=xlDescending, DataOption:=xlSortNormal
+    With ActiveWorkbook.Worksheets("Temp1").sort
+        '.SetRange Range("A1:C6")
+        .SetRange Range("A1:" & "C" & lastRow)
+        .Header = xlYes
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+    Selection.Columns.AutoFit
+End Sub
+Sub makeBorder_Old()
+    ThisWorkbook.Activate
+    
+    'Range("A1").Select
+    Range(Selection, Selection.End(xlDown)).Select
+    Range(Selection, Selection.End(xlToRight)).Select
+    Selection.Borders(xlDiagonalDown).LineStyle = xlNone
+    Selection.Borders(xlDiagonalUp).LineStyle = xlNone
+    With Selection.Borders(xlEdgeLeft)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+  
+End Sub
+Sub autoFitColumn()
+
+    Cells.Select
+    Selection.Columns.AutoFit
+    Range("A1").Select
+    
+End Sub
+
+
+Sub TrackGroup()
+'
+' TrackGroup Macro
+'
+
+    ThisWorkbook.Activate
+    Sheets("Data").Select
+    Call Temp1sheetAdd
+    Dim pvtSheet As String
+ 
+ 
+    Sheets("Data").Select
+    Dim lastRow As Integer
+    Range("A1048576").Select
+    Selection.End(xlUp).Select
+    lastRow = ActiveCell.Row
+
+'    Range("A1:J20").Select
+'    ActiveWorkbook.PivotCaches.Create(SourceType:=xlDatabase, SourceData:= _
+'        "Data!R1C1:R20C10", Version:=xlPivotTableVersion15).CreatePivotTable _
+'        TableDestination:="", TableName:="PivotTable4", DefaultVersion:= _
+'        xlPivotTableVersion15
+        
+    Range("A1:" & "J" & lastRow).Select
+    
+'    ActiveWorkbook.PivotCaches.Create(SourceType:=xlDatabase, SourceData:= _
+'        "Data!R1C1:R20C10", Version:=xlPivotTableVersion15).CreatePivotTable _
+'        TableDestination:="", TableName:="PivotTable4", DefaultVersion:= _
+'        xlPivotTableVersion15
+        
+
+        ActiveWorkbook.PivotCaches.Create(SourceType:=xlDatabase, SourceData:= _
+        "Data!R1C1:" & "R" & lastRow & "C10", Version:=xlPivotTableVersion15).CreatePivotTable _
+        TableDestination:="", TableName:="PivotTable4", DefaultVersion:= _
+        xlPivotTableVersion15
+
+        
+    ActiveSheet.PivotTableWizard TableDestination:=ActiveSheet.Cells(3, 1)
+    ActiveSheet.Cells(3, 1).Select
+    With ActiveSheet.PivotTables("PivotTable4").PivotFields("Track")
+        .Orientation = xlRowField
+        .Position = 1
+    End With
+        
+        pvtSheet = ActiveSheet.Name
+
+    ActiveSheet.PivotTables("PivotTable4").AddDataField ActiveSheet.PivotTables( _
+        "PivotTable4").PivotFields("AssigneeELID"), "Count of AssigneeELID", xlCount
+    Range(Selection, Selection.End(xlToRight)).Select
+    Range(Selection, Selection.End(xlDown)).Select
+    Selection.Copy
+    Sheets("Temp1").Select
+    Range("A1").Select
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Selection.PasteSpecial Paste:=xlPasteFormats, Operation:=xlNone, _
+        SkipBlanks:=False, Transpose:=False
+    Selection.Columns.AutoFit
+    Range("A1").Select
+    Application.CutCopyMode = False
+    ActiveCell.FormulaR1C1 = "Track"
+    
+
+    
+    Range("A2").Select
+    Selection.End(xlDown).Select
+    'Rows("7:7").Select
+    
+    ActiveCell.EntireRow.Select
+    
+    Selection.Delete Shift:=xlUp
+    
+    Range("A1048576").Select
+    Selection.End(xlUp).Select
+    lastRow = ActiveCell.Row
+    
+    Range("A1").Select
+    
+    Columns("A:B").Select
+    Range("A3").Activate
+    Application.CutCopyMode = False
+    ActiveWorkbook.Worksheets("Temp1").sort.SortFields.Clear
+    ActiveWorkbook.Worksheets("Temp1").sort.SortFields.Add Key:=Range("A3"), _
+        SortOn:=xlSortOnValues, Order:=xlDescending, DataOption:=xlSortNormal
+    With ActiveWorkbook.Worksheets("Temp1").sort
+        '.SetRange Range("A2:B7")
+        .SetRange Range("A2:" & "B" & lastRow)
+        
+        .Header = xlNo
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+    'Range("A1:B6").Select
+    Range("A1:" & "B" & lastRow).Select
+    
+    Selection.Copy
+    
+    Sheets("TempSheet").Select
+    
+    'Range("B9").Select
+    Range("B" & lr_top + 3).Select
+    
+    ActiveSheet.Paste
+    Cells.Select
+    Selection.Columns.AutoFit
+    
+    Range("B1048576").Select
+    Selection.End(xlUp).Select
+    lr_group = ActiveCell.Row
+
+    
+    Sheets("Data").Select
+'    Range("A1:J20").Select
+    
+    Range("A1048576").Select
+    Selection.End(xlUp).Select
+    lastRow = ActiveCell.Row
+
+    Range("A1:" & "J" & lastRow).Select
+    Selection.Copy
+    Sheets("TempSheet").Select
+    
+    Range("A" & lr_group + 3).Select
+    
+'    Range("A17").Select
+    ActiveSheet.Paste
+    Cells.Select
+    Selection.Columns.AutoFit
+    Range("A1").Select
+    Application.CutCopyMode = False
+    
+    Sheets(pvtSheet).Select
+    ActiveWindow.SelectedSheets.Delete
+    
+End Sub
+
+Sub makeBorder()
+
+    ThisWorkbook.Activate
+    
+    Dim lastRow As Integer
+    Range("A1048576").Select
+    Selection.End(xlUp).Select
+    lastRow = ActiveCell.Row
+    Range("A1:C" & lastRow).Select
+    
+'    Range(Selection, Selection.End(xlDown)).Select
+'    Range(Selection, Selection.End(xlToRight)).Select
+    
+    Selection.Borders(xlDiagonalDown).LineStyle = xlNone
+    Selection.Borders(xlDiagonalUp).LineStyle = xlNone
+    With Selection.Borders(xlEdgeLeft)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlEdgeTop)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlEdgeBottom)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlEdgeRight)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlInsideVertical)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlInsideHorizontal)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    
+End Sub
+
+
+Sub deleteTemptSheet()
+''Application.DisplayAlerts = False
+
+    For Each Sheet In ActiveWorkbook.Worksheets
+        
+        If Sheet.Name = "TempSheet" Then
+          Sheet.Delete
+        End If
+     
+        
+    Next Sheet
+
+''Application.DisplayAlerts = True
+
+End Sub
+
+Sub deleteTemp1()
+''Application.DisplayAlerts = False
+
+    For Each Sheet In ActiveWorkbook.Worksheets
+        
+        If Sheet.Name = "Temp1" Then
+          Sheet.Delete
+        End If
+     
+        
+    Next Sheet
+
+''Application.DisplayAlerts = True
+
+End Sub
+
+
+Sub sendEmail_ExcelTable()
+   Dim outlook As Object
+   Dim newEmail As Object
+   Dim xInspect As Object
+   Dim pageEditor As Object
+   
+   Set outlook = CreateObject("Outlook.Application")
+   Set newEmail = outlook.CreateItem(0)
+   
+   With newEmail
+        .to = "mahetabForWork@gmail.com"
+        ''.to = "mahetabForWork@gmail.com"
+        .CC = ""
+        .BCC = ""
+        .Subject = "Report of the year "
+        .Body = "Please find the request information" & vbCrLf & "Best Regards"
+        .display
+        
+        Set xInspect = newEmail.GetInspector
+        Set pageEditor = xInspect.WordEditor
+        
+        Application.ThisWorkbook.Activate
+        ThisWorkbook.Activate
+        Sheets("TempSheet").Select
+        
+        Dim lastRow As Integer
+        Range("A1048576").Select
+        Selection.End(xlUp).Select
+        lastRow = ActiveCell.Row
+        
+        Sheets("TempSheet").Select
+'        Range("A2:J" & lastRow).Select
+'        Selection.Copy
+         Range("A2:J" & lastRow).Copy
+        
+        pageEditor.Application.Selection.Start = Len(.Body)
+        pageEditor.Application.Selection.End = pageEditor.Application.Selection.Start
+        pageEditor.Application.Selection.PasteAndFormat (wdFormatPlainText)
+        .display
+        .Send
+        
+        Set pageEditor = Nothing
+        Set xInspect = Nothing
+    
+    End With
+            
+End Sub
+
+Sub mBorder()
+                        
+            
+            ThisWorkbook.Activate
+            Sheets("TempSheet").Activate
+            Sheets("TempSheet").Select
+                        
+                        
+            ActiveWindow.DisplayGridlines = False
+            Cells.Select
+            Selection.Borders.LineStyle = Excel.XlLineStyle.xlLineStyleNone
+            
+            Range("B2").Value = "TOP 3:"
+            Range("B3:D" & lr_top).Select
+            
+            With Selection.Borders
+                .LineStyle = xlContinuous
+                .Weight = xlThin
+                .ColorIndex = xlAutomatic
+            End With
+            
+            
+            Range("B" & lr_top + 2).Value = "Group ID:"
+            Range("B" & lr_top + 3 & ":C" & lr_group).Select
+                       
+            With Selection.Borders
+                .LineStyle = xlContinuous
+                .Weight = xlThin
+                .ColorIndex = xlAutomatic
+            End With
+            
+            Dim lastRow As Integer
+            Range("A1048576").Select
+            Selection.End(xlUp).Select
+            lastRow = ActiveCell.Row
+            
+            Range("A" & lr_group + 2).Value = "Records:"
+            Range("A" & lr_group + 3 & ":J" & lastRow).Select
+                       
+            With Selection.Borders
+                .LineStyle = xlContinuous
+                .Weight = xlThin
+                .ColorIndex = xlAutomatic
+            End With
+                
+        Cells.Select
+        Selection.Columns.AutoFit
+        
+End Sub
+
+
+
+
+
+
+
+
+
